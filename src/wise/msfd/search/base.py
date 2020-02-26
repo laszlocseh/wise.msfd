@@ -1,6 +1,5 @@
 import logging
 import re
-from collections import defaultdict
 from datetime import datetime
 
 from zope.interface import implements
@@ -15,9 +14,8 @@ from z3c.form.form import Form
 
 from . import interfaces
 from ..base import BaseEnhancedForm, BaseUtil, EmbeddedForm
-from ..db import get_all_records, get_item_by_conditions, use_db_session
+from ..db import get_item_by_conditions
 from ..interfaces import IMainForm
-from ..sql2018 import ReportedInformation
 from .utils import get_registered_form_sections
 
 logger = logging.getLogger('wise.msfd')
@@ -97,29 +95,6 @@ class ItemDisplayForm(EmbeddedForm):
 
         return res
 
-    @use_db_session('2018')
-    def latest_import_ids_2018(self):
-        mc = ReportedInformation
-
-        count, res = get_all_records(
-            mc
-        )
-
-        groups = defaultdict(int)
-
-        for row in res:
-            country_code = row.CountryCode
-            schema = row.Schema
-            rowid = row.Id
-            k = (country_code, schema)
-
-            if rowid >= groups[k]:
-                groups[k] = rowid
-
-        latest_ids = [v for k,v in groups.items()]
-
-        return latest_ids
-
     # def item_title(self, item):
     #     state = inspect(item)
     #
@@ -198,7 +173,7 @@ def true(view):
 
 MAIN_FORMS = (
     Tab('msfd-start', 'msfd-start', 'Start',
-        'About <br/>search engine', '', '', true),
+        'About search engine', '', '', true),
     Tab('msfd-mru', 'msfd-mru', 'Article 4', 'Marine Units',
         'Geographical areas used by Member States for the\n\
         implementation of the Directive (e.g. marine waters or subdivisions\n\
@@ -214,6 +189,8 @@ MAIN_FORMS = (
         'Member States authority or authorities competent for the\n\
         implementation of the Directive with respect to their marine waters.',
         '', true),
+    # Tab('msfd-c14', 'msfd-c14', 'Articles 8, 9 & 10',
+    #     '2012 Reporting exercise', '', '', true),
     Tab('msfd-a8', 'msfd-a8', 'Article 8', 'Assessments',
         'Assessments of Member States marine waters comprising: a) an analysis\n\
         of the essential features and characteristics, b) an analysis of the\n\
@@ -246,8 +223,6 @@ MAIN_FORMS = (
         'Interim reports',
         'Progress in the implementation of the programmes of measures.',
         '', true),
-    Tab('msfd-c6', 'msfd-c6', 'Article 19.3',
-        'Datasets used', '', '', true),
 )
 
 
